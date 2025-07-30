@@ -31,14 +31,18 @@ services:
       - redis
     command: >
       bash -c "
+      source ~/.nvm/nvm.sh &&
+      nvm use &&
+
       cd /home/frappe &&
+
       if [ -d 'frappe-bench/apps/frappe' ]; then
         echo 'Bench already exists, skipping init' &&
         cd frappe-bench &&
         bench start;
       else
         echo 'Creating new bench...' &&
-        export PATH=\"$NVM_DIR/versions/node/v$NODE_VERSION_DEVELOP/bin/:$PATH\" &&
+        export PATH=\"$HOME/.nvm/versions/node/$(nvm version)/bin:$PATH\" &&
         bench init --skip-redis-config-generation frappe-bench &&
         cd frappe-bench &&
         bench set-mariadb-host mariadb &&
