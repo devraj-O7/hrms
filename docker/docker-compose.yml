@@ -1,5 +1,4 @@
-version: "3.8"
-
+version: "3.8" # Updated version
 services:
   mariadb:
     image: mariadb:10.8
@@ -7,7 +6,7 @@ services:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
       - --skip-character-set-client-handshake
-      - --skip-innodb-read-only-compressed
+      - --skip-innodb-read-only-compressed # Temporary fix for MariaDB 10.6
     environment:
       MYSQL_ROOT_PASSWORD: 123
     volumes:
@@ -18,46 +17,15 @@ services:
 
   frappe:
     image: frappe/bench:latest
-    working_dir: /home/frappe
+    command: bash /workspace/init.sh
     environment:
       - SHELL=/bin/bash
+    working_dir: /home/frappe
     volumes:
       - .:/workspace
     ports:
-      - "8090:8000"
-      - "9090:9000"
-    depends_on:
-      - mariadb
-      - redis
-    command: >
-      bash -c "
-      export PATH=$HOME/.nvm/versions/node/v20.11.1/bin:$PATH &&
-      cd /home/frappe &&
-
-      if [ -d 'frappe-bench/apps/frappe' ]; then
-        echo 'Bench already exists, skipping init' &&
-        cd frappe-bench &&
-        bench start;
-      else
-        echo 'Creating new bench...' &&
-        bench init --skip-redis-config-generation frappe-bench &&
-        cd frappe-bench &&
-        bench set-mariadb-host mariadb &&
-        bench set-redis-cache-host redis://redis:6379 &&
-        bench set-redis-queue-host redis://redis:6379 &&
-        bench set-redis-socketio-host redis://redis:6379 &&
-        sed -i '/redis/d' ./Procfile &&
-        sed -i '/watch/d' ./Procfile &&
-        bench get-app erpnext &&
-        bench get-app hrms &&
-        bench new-site hrms.localhost --force --mariadb-root-password 123 --admin-password admin --no-mariadb-socket &&
-        bench --site hrms.localhost install-app hrms &&
-        bench --site hrms.localhost set-config developer_mode 1 &&
-        bench --site hrms.localhost enable-scheduler &&
-        bench --site hrms.localhost clear-cache &&
-        bench use hrms.localhost &&
-        bench start;
-      fi"
+      - 8090:8000
+      - 9090:9000
 
 volumes:
   mariadb-data:
