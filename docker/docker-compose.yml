@@ -31,9 +31,7 @@ services:
       - redis
     command: >
       bash -c "
-      source ~/.nvm/nvm.sh &&
-      nvm use &&
-
+      export PATH=$HOME/.nvm/versions/node/v20.11.1/bin:$PATH &&
       cd /home/frappe &&
 
       if [ -d 'frappe-bench/apps/frappe' ]; then
@@ -42,7 +40,6 @@ services:
         bench start;
       else
         echo 'Creating new bench...' &&
-        export PATH=\"$HOME/.nvm/versions/node/$(nvm version)/bin:$PATH\" &&
         bench init --skip-redis-config-generation frappe-bench &&
         cd frappe-bench &&
         bench set-mariadb-host mariadb &&
